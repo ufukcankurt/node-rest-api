@@ -66,7 +66,7 @@ router.put("/:id/follow", async (req,res)=> {
             if(!user.followers.includes(req.body.userId)){
                 await user.updateOne({$push:{followers:req.body.userId}})
                 await currentUser.updateOne({$push:{followings:req.params.id}})
-                res.send(200).json("User has been followed")
+                res.status(200).json("User has been followed")
             }else{
                 res.status(403).json("You already follow this user.")
             }
@@ -78,9 +78,29 @@ router.put("/:id/follow", async (req,res)=> {
     }
 })
 
+
 // Unfollow a User
-
-
+router.put("/:id/unfollow", async (req,res)=> {
+    if(req.body.userId !== req.params.id){ // same user
+        try {
+            const user = await User.findById(req.params.id) 
+            const currentUser = await User.findById(req.body.userId)
+            // delete "!" from beginning of if --> because If this user includes this id this if block will be run. 
+            if(user.followers.includes(req.body.userId)){
+                // convert from "push" to "pull" -->
+                await user.updateOne({$pull:{followers:req.body.userId}})
+                await currentUser.updateOne({$pull:{followings:req.params.id}})
+                res.status(200).json("User has been unfollowed")
+            }else{
+                res.status(403).json("You don't follow this user.")
+            }
+        } catch (error) {
+            res.status(500).json(error)
+        }
+    }else{
+        res.status(403).json("You can't unfollow yourself.")
+    }
+})
 
 
 module.exports = router
