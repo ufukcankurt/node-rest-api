@@ -14,6 +14,24 @@ router.post("/", async(req,res)=> {
 })
 
 // Update a post 
+router.put("/:id", async (req,res)=>{
+    try {
+        // I'll verify user again to do that I'll find this post
+    const post = await Post.findById(req.params.id) // this id --> [router.put("/:id"]
+    // We're gonna check the owner of this post.
+    if(post.userId === req.body.userId){
+        // if it's the same we can update this.
+        await post.updateOne({$set:req.body})
+        res.status(200).json("The post has been updated.")
+    }else{
+        // if it's not I'll just turn some error.
+        res.status(403).json("You can update only your post");
+    }
+    } catch (error) {
+        // even if there is no post like this it's gonna turn 500
+        res.status(500).json(error)
+    }
+})
 // Delete a post 
 // Like a post 
 // Get a post 
